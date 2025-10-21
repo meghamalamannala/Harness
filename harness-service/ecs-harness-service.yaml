@@ -1,0 +1,108 @@
+service:
+  name: ecs-fargate-service
+  identifier: ecsfargateservice
+  orgIdentifier: default
+  projectIdentifier: HPM
+  serviceDefinition:
+    spec:
+      manifests:
+        - manifest:
+            identifier: taskdefinition
+            type: EcsTaskDefinition
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: github_connector
+                  gitFetchType: Branch
+                  paths:
+                    - App/Frontend/harness-taskdefinition.json
+                  repoName: Infra-App-Deployment
+                  branch: main
+        - manifest:
+            identifier: ecsfargateservice
+            type: EcsServiceDefinition
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: github_connector
+                  gitFetchType: Branch
+                  paths:
+                    - App/Frontend/harness-service.json
+                  repoName: Infra-App-Deployment
+                  branch: main
+      artifacts:
+        primary:
+          primaryArtifactRef: <+input>
+          sources:
+            - spec:
+                connectorRef: aws_connector
+                imagePath: <+pipeline.variables.AppName>
+                tag: <+input>
+                digest: ""
+                region: <+variable.region>
+              identifier: ecrrepository
+              type: Ecr
+      variables:
+        - name: DesiredCount
+          type: String
+          description: ""
+          required: false
+          value: <+input>
+        - name: containername
+          type: String
+          description: ""
+          required: false
+          value: <+pipeline.variables.AppName>
+        - name: SubnetA
+          type: String
+          description: ""
+          required: false
+          value: subnet-0c2aa5d3cb9969e73
+        - name: SubnetB
+          type: String
+          description: ""
+          required: false
+          value: subnet-0d31b0f375f0aec3b
+        - name: SubnetC
+          type: String
+          description: ""
+          required: false
+          value: subnet-07291f280311243a2
+        - name: SecurityGroup
+          type: String
+          description: ""
+          required: false
+          value: sg-0fbf5ab008229e767
+        - name: targetGroupArn
+          type: String
+          description: ""
+          required: false
+          value: <+input>
+        - name: containerport
+          type: String
+          description: ""
+          required: false
+          value: "80"
+        - name: executionRoleArn
+          type: String
+          description: ""
+          required: false
+          value: arn:aws:iam::339712808268:role/batch19-ecs-taskexecution-role
+        - name: memory
+          type: String
+          description: ""
+          required: false
+          value: <+input>
+        - name: cpu
+          type: String
+          description: ""
+          required: false
+          value: <+input>
+        - name: region
+          type: String
+          description: ""
+          required: false
+          value: us-east-2
+    type: ECS
